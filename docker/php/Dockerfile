@@ -50,6 +50,9 @@ FROM base AS prod
 
 ENV APP_ENV=prod
 ENV FRANKENPHP_CONFIG="worker ./public/index.php"
+# Valeurs factices uniquement pour le build — écrasées au runtime par compose.prod.yml
+ENV APP_SECRET=build_secret_placeholder_32chars__
+ENV DATABASE_URL=postgresql://build:build@localhost/build
 
 COPY docker/php/conf.d/php.prod.ini /usr/local/etc/php/conf.d/app.ini
 
@@ -57,6 +60,12 @@ COPY --chown=www-data:www-data . .
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction \
     && php bin/console asset-map:compile \
-    && php bin/console cache:warmup
+    && php bin/console cache:warmup --no-optional-warmers
 
 RUN mkdir -p public/uploads && chown -R www-data:www-data public/uploads
+
+COPY docker/php/entrypoint.prod.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
