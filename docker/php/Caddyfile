@@ -6,7 +6,7 @@
     }
 }
 
-{$SERVER_NAME:localhost} {
+http://{$SERVER_NAME:localhost} {
     log {
         level INFO
         output stderr
