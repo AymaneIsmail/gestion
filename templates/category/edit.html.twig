@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier — {{ category.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav class="breadcrumb">
+            <a href="{{ path('app_category_index') }}">Catégories</a>
+            <span>›</span>
+            <span>Modifier</span>
+        </nav>
+        <h1 class="page-title">Modifier la catégorie</h1>
+    </div>
+</div>
+
+{{ form_start(form, {attr: {class: 'simple-form', novalidate: 'novalidate'}}) }}
+    {{ include('partials/_form_errors.html.twig') }}
+    <div class="form-group">
+        {{ form_label(form.name) }}
+        {{ form_widget(form.name, {attr: {class: 'form-control'}}) }}
+        {{ form_errors(form.name) }}
+    </div>
+    <div class="form-actions">
+        <a href="{{ path('app_category_index') }}" class="btn btn--secondary">Annuler</a>
+        <button type="submit" class="btn btn--primary">Enregistrer</button>
+    </div>
+{{ form_end(form) }}
+{% endblock %}

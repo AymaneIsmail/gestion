@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Choisir une organisation{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-card__header">
+        <div class="auth-logo">🏢</div>
+        <h1 class="auth-card__title">Choisir une organisation</h1>
+        <p class="auth-card__subtitle">Sélectionnez l'organisation dans laquelle vous souhaitez travailler</p>
+    </div>
+
+    {% if organizations is empty %}
+        <div class="empty-state">
+            <p>Vous n'appartenez à aucune organisation.</p>
+            <p>Contactez un administrateur pour être ajouté.</p>
+        </div>
+    {% else %}
+        <form method="post" class="org-list">
+            {% for organization in organizations %}
+                <button
+                    type="submit"
+                    name="organization_id"
+                    value="{{ organization.id }}"
+                    class="org-card"
+                >
+                    <span class="org-card__icon">🏢</span>
+                    <span class="org-card__name">{{ organization.name }}</span>
+                    <span class="org-card__arrow">→</span>
+                </button>
+            {% endfor %}
+        </form>
+    {% endif %}
+
+    <div class="auth-card__footer">
+        <a href="{{ path('app_logout') }}" class="link-muted">Se déconnecter</a>
+    </div>
+</div>
+{% endblock %}

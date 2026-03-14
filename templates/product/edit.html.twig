@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier — {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav class="breadcrumb">
+            <a href="{{ path('app_product_index') }}">Produits</a>
+            <span>›</span>
+            <a href="{{ path('app_product_show', {id: product.id}) }}">{{ product.name }}</a>
+            <span>›</span>
+            <span>Modifier</span>
+        </nav>
+        <h1 class="page-title">Modifier le produit</h1>
+    </div>
+</div>
+
+{# Existing images #}
+{% if product.images|length > 0 %}
+    <div class="form-section">
+        <h2 class="form-section__title">Images actuelles</h2>
+        <div class="image-list">
+            {% for image in product.images %}
+                <div class="image-item">
+                    <img src="{{ path('app_image_serve', {id: image.id}) }}" alt="{{ image.originalName }}" class="image-item__preview">
+                    <div class="image-item__info">
+                        <span class="image-item__name">{{ image.originalName ?? 'Image ' ~ loop.index }}</span>
+                    </div>
+                    {{ include('partials/_delete_form.html.twig', {
+                        action: path('app_product_image_delete', {productId: product.id, imageId: image.id}),
+                        token_id: 'delete-image-' ~ image.id,
+                        label: '✕ Supprimer',
+                    }) }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+{{ form_start(form, {attr: {class: 'product-form', enctype: 'multipart/form-data', novalidate: 'novalidate'}}) }}
+    {{ include('product/_form.html.twig') }}
+    <div class="form-actions">
+        <a href="{{ path('app_product_show', {id: product.id}) }}" class="btn btn--secondary">Annuler</a>
+        <button type="submit" class="btn btn--primary">Enregistrer</button>
+    </div>
+{{ form_end(form) }}
+{% endblock %}

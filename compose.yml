@@ -1,0 +1,48 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/app
+      - /app/var
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    depends_on:
+      database:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    networks:
+      - gestion
+
+  database:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gestion}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gestion
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - gestion
+
+volumes:
+  postgres_data:
+
+networks:
+  gestion:
+    driver: bridge

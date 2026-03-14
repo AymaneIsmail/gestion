@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav class="breadcrumb">
+            <a href="{{ path('app_product_index') }}">Produits</a>
+            <span>›</span>
+            <span>{{ product.name }}</span>
+        </nav>
+        <h1 class="page-title">{{ product.name }}</h1>
+    </div>
+    <div class="page-header__actions">
+        <a href="{{ path('app_product_edit', {id: product.id}) }}" class="btn btn--secondary">
+            Modifier
+        </a>
+        {{ include('partials/_delete_form.html.twig', {
+            action: path('app_product_delete', {id: product.id}),
+            token_id: 'delete-product-' ~ product.id,
+            label: 'Supprimer',
+        }) }}
+    </div>
+</div>
+
+<div class="product-detail">
+    {# Images gallery #}
+    {% if product.images|length > 0 %}
+        <div class="product-gallery" data-controller="gallery">
+            <div class="product-gallery__main">
+                <img
+                    src="{{ path('app_image_serve', {id: product.images.first.id}) }}"
+                    alt="{{ product.name }}"
+                    class="product-gallery__main-image"
+                    data-gallery-target="main"
+                >
+            </div>
+            {% if product.images|length > 1 %}
+                <div class="product-gallery__thumbs">
+                    {% for image in product.images %}
+                        <button
+                            type="button"
+                            class="product-gallery__thumb{% if loop.first %} product-gallery__thumb--active{% endif %}"
+                            data-action="gallery#select"
+                            data-gallery-src-param="{{ path('app_image_serve', {id: image.id}) }}"
+                            data-gallery-target="thumb"
+                        >
+                            <img src="{{ path('app_image_serve', {id: image.id}) }}" alt="Image {{ loop.index }}">
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="product-no-image">
+            <span>📷</span>
+            <p>Aucune image</p>
+        </div>
+    {% endif %}
+
+    {# Product details #}
+    <div class="product-info">
+        <dl class="info-list">
+            {% if product.reference %}
+                <div class="info-list__row">
+                    <dt class="info-list__label">Référence</dt>
+                    <dd class="info-list__value"><code>{{ product.reference }}</code></dd>
+                </div>
+            {% endif %}
+
+            {% if product.category %}
+                <div class="info-list__row">
+                    <dt class="info-list__label">Catégorie</dt>
+                    <dd class="info-list__value">
+                        <span class="badge badge--category">{{ product.category.name }}</span>
+                    </dd>
+                </div>
+            {% endif %}
+
+            {% if product.tags|length > 0 %}
+                <div class="info-list__row">
+                    <dt class="info-list__label">Tags</dt>
+                    <dd class="info-list__value">
+                        {% for tag in product.tags %}
+                            <span class="tag">{{ tag.name }}</span>
+                        {% endfor %}
+                    </dd>
+                </div>
+            {% endif %}
+
+            {% if product.price %}
+                {% if product.price.purchasePriceCents is not null %}
+                    <div class="info-list__row">
+                        <dt class="info-list__label">Prix d'achat</dt>
+                        <dd class="info-list__value price">
+                            {{ (product.price.purchasePriceCents / 100)|number_format(2, ',', ' ') }} €
+                        </dd>
+                    </div>
+                {% endif %}
+                {% if product.price.sellingPriceCents is not null %}
+                    <div class="info-list__row">
+                        <dt class="info-list__label">Prix de vente</dt>
+                        <dd class="info-list__value price price--selling">
+                            {{ (product.price.sellingPriceCents / 100)|number_format(2, ',', ' ') }} €
+                        </dd>
+                    </div>
+                {% endif %}
+                {% if product.price.purchasePriceCents is not null and product.price.sellingPriceCents is not null %}
+                    {% set margin = product.price.sellingPriceCents - product.price.purchasePriceCents %}
+                    <div class="info-list__row">
+                        <dt class="info-list__label">Marge</dt>
+                        <dd class="info-list__value price {% if margin >= 0 %}price--positive{% else %}price--negative{% endif %}">
+                            {{ (margin / 100)|number_format(2, ',', ' ') }} €
+                        </dd>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <div class="info-list__row">
+                <dt class="info-list__label">Créé le</dt>
+                <dd class="info-list__value">{{ product.createdAt|date('d/m/Y à H:i') }}</dd>
+            </div>
+            <div class="info-list__row">
+                <dt class="info-list__label">Modifié le</dt>
+                <dd class="info-list__value">{{ product.updatedAt|date('d/m/Y à H:i') }}</dd>
+            </div>
+        </dl>
+
+        {% if product.description %}
+            <div class="product-description">
+                <h3>Description</h3>
+                <p>{{ product.description|nl2br }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

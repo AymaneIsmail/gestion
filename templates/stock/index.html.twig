@@ -1,0 +1,210 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Stock{% endblock %}
+
+{% block content %}
+<div data-controller="tag-filter">
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Gestion du stock</h1>
+        <p class="page-subtitle">{{ products|length }} produit{{ products|length != 1 ? 's' : '' }}</p>
+    </div>
+</div>
+
+{# Barre de recherche + filtres #}
+{% set hasFilters = query or selectedCategoryId or selectedTagIds is not empty %}
+<form method="get" action="{{ path('app_stock_index') }}" class="stock-filters" autocomplete="off">
+    <div class="stock-search-wrap">
+        <svg class="stock-search-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+        </svg>
+        <input
+            type="search"
+            name="q"
+            value="{{ query }}"
+            placeholder="Rechercher par nom ou référence…"
+            class="stock-search-input"
+            autofocus
+        >
+        {% if query %}
+            <button type="button" class="stock-search-clear" title="Effacer" onclick="this.closest('form').q.value='';this.closest('form').submit()">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </button>
+        {% endif %}
+    </div>
+
+    <div class="stock-filter-row">
+        {% if categories is not empty %}
+        <select name="category" class="stock-filter-select" onchange="this.form.submit()">
+            <option value="">Toutes les catégories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if category.id == selectedCategoryId %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+        {% endif %}
+
+        {% if tags is not empty %}
+        <div class="tag-filter-wrap">
+            <button
+                type="button"
+                class="tag-filter-trigger"
+                data-tag-filter-target="trigger"
+                data-action="click->tag-filter#toggle"
+                data-active="0"
+            >
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-.293.707L13 9.414V15a1 1 0 01-.553.894l-4 2A1 1 0 017 17v-7.586L3.293 5.707A1 1 0 013 5V3z" clip-rule="evenodd"/></svg>
+                Tags
+                <span class="tag-filter-count" data-tag-filter-target="count" hidden>0</span>
+            </button>
+            <div class="tag-filter-panel" data-tag-filter-target="panel">
+                {% for tag in tags %}
+                <label class="tag-filter-option">
+                    <input
+                        type="checkbox"
+                        name="tag[]"
+                        value="{{ tag.id }}"
+                        data-tag-filter-target="checkbox"
+                        data-action="change->tag-filter#change"
+                        {% if tag.id in selectedTagIds %}checked{% endif %}
+                    >
+                    <span class="tag-filter-option__label">{{ tag.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if hasFilters %}
+            <a href="{{ path('app_stock_index') }}" class="stock-filter-reset">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                Réinitialiser
+            </a>
+        {% endif %}
+    </div>
+</form>
+
+{% if products is empty %}
+    <div class="empty-state">
+        <div class="empty-state__icon">📦</div>
+        <h2 class="empty-state__title">
+            {% if hasFilters %}Aucun résultat{% else %}Aucun produit{% endif %}
+        </h2>
+        {% if hasFilters %}
+            <p class="empty-state__description">Aucun produit ne correspond aux filtres sélectionnés.</p>
+            <a href="{{ path('app_stock_index') }}" class="btn btn--secondary">Réinitialiser les filtres</a>
+        {% else %}
+            <p class="empty-state__description">Créez d'abord des produits pour gérer leur stock.</p>
+            <a href="{{ path('app_product_new') }}" class="btn btn--primary">Créer un produit</a>
+        {% endif %}
+    </div>
+{% else %}
+
+{# Résumé stock #}
+{% set outOfStock = 0 %}
+{% for p in products %}
+    {% if p.stockQuantity == 0 %}{% set outOfStock = outOfStock + 1 %}{% endif %}
+{% endfor %}
+
+<div class="stock-summary">
+    <div class="stock-stat">
+        <span class="stock-stat__value">{{ products|length - outOfStock }}</span>
+        <span class="stock-stat__label">Produits disponibles</span>
+    </div>
+    <div class="stock-stat stock-stat--danger">
+        <span class="stock-stat__value">{{ outOfStock }}</span>
+        <span class="stock-stat__label">En rupture</span>
+    </div>
+</div>
+
+{# Liste des produits #}
+<div class="stock-list">
+    {% for product in products %}
+    <div
+        class="stock-row"
+        data-controller="stock"
+        data-stock-increment-url-value="{{ path('app_stock_increment', {id: product.id}) }}"
+        data-stock-decrement-url-value="{{ path('app_stock_decrement', {id: product.id}) }}"
+        data-stock-set-url-value="{{ path('app_stock_set', {id: product.id}) }}"
+        data-tag-filter-target="row"
+        data-tag-ids="{{ product.tags|map(t => t.id)|join(',') }}"
+    >
+        {# Vignette #}
+        <div class="stock-row__thumb">
+            {% if product.images|length > 0 %}
+                <img src="{{ path('app_image_serve', {id: product.images.first.id}) }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+                <span class="stock-row__no-img">📦</span>
+            {% endif %}
+        </div>
+
+        {# Infos produit #}
+        <div class="stock-row__info">
+            <a href="{{ path('app_product_show', {id: product.id}) }}" class="stock-row__name">
+                {{ product.name }}
+            </a>
+            <div class="stock-row__meta">
+                {% if product.reference %}
+                    <span class="badge badge--ref">{{ product.reference }}</span>
+                {% endif %}
+                {% if product.category %}
+                    <span class="badge badge--category">{{ product.category.name }}</span>
+                {% endif %}
+                <span
+                    class="stock-badge"
+                    data-stock-target="badge"
+                    data-in-stock="{{ product.isInStock ? '1' : '0' }}"
+                >
+                    {{ product.isInStock ? 'En stock' : 'Rupture' }}
+                </span>
+            </div>
+        </div>
+
+        {# Contrôles stock #}
+        <div class="stock-row__controls">
+            <button
+                type="button"
+                class="stock-btn stock-btn--minus"
+                data-action="stock#decrement"
+                data-stock-target="decrement"
+                {% if product.stockQuantity <= 0 %}disabled{% endif %}
+                aria-label="Retirer 1"
+            >
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+            </button>
+
+            <div class="stock-qty-wrap">
+                <span class="stock-qty" data-stock-target="quantity">{{ product.stockQuantity }}</span>
+                <input
+                    type="number"
+                    class="stock-qty-input"
+                    value="{{ product.stockQuantity }}"
+                    min="0"
+                    data-stock-target="input"
+                    data-action="blur->stock#commitInput focus->stock#selectInput keydown->stock#handleKey"
+                    aria-label="Quantité en stock"
+                >
+            </div>
+
+            <button
+                type="button"
+                class="stock-btn stock-btn--plus"
+                data-action="stock#increment"
+                aria-label="Ajouter 1"
+            >
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+    <div class="empty-state" data-tag-filter-target="empty" hidden>
+        <div class="empty-state__icon">🏷️</div>
+        <h2 class="empty-state__title">Aucun résultat</h2>
+        <p class="empty-state__description">Aucun produit ne correspond aux tags sélectionnés.</p>
+    </div>
+{% endif %}
+</div>{# /tag-filter controller #}
+{% endblock %}

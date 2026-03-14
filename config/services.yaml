@@ -1,0 +1,25 @@
+parameters:
+    upload_directory: '%kernel.project_dir%/public/uploads'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            string $appEnv: '%kernel.environment%'
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Service\ImageUploader:
+        arguments:
+            $uploadDirectory: '%upload_directory%'
+
+    App\Controller\ImageController:
+        arguments:
+            $uploadDirectory: '%upload_directory%'
+        tags: ['controller.service_arguments']

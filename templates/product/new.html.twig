@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau produit{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav class="breadcrumb">
+            <a href="{{ path('app_product_index') }}">Produits</a>
+            <span>›</span>
+            <span>Nouveau produit</span>
+        </nav>
+        <h1 class="page-title">Nouveau produit</h1>
+    </div>
+</div>
+
+{{ form_start(form, {attr: {class: 'product-form', enctype: 'multipart/form-data', novalidate: 'novalidate'}}) }}
+    {{ include('product/_form.html.twig') }}
+    <div class="form-actions">
+        <a href="{{ path('app_product_index') }}" class="btn btn--secondary">Annuler</a>
+        <button type="submit" class="btn btn--primary">Créer le produit</button>
+    </div>
+{{ form_end(form) }}
+{% endblock %}

@@ -1,0 +1,108 @@
+{{ include('partials/_form_errors.html.twig') }}
+
+<div class="form-section">
+    <h2 class="form-section__title">Informations générales</h2>
+    <div class="form-grid">
+        <div class="form-group form-group--full">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name, {attr: {class: 'form-control'}}) }}
+            {{ form_errors(form.name) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.reference) }}
+            {{ form_widget(form.reference, {attr: {class: 'form-control'}}) }}
+            {{ form_errors(form.reference) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.category) }}
+            {{ form_widget(form.category, {attr: {class: 'form-select'}}) }}
+            {{ form_errors(form.category) }}
+        </div>
+        <div class="form-group form-group--full">
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description, {attr: {class: 'form-control'}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+    </div>
+</div>
+
+<div class="form-section" data-controller="tag-picker">
+    <div class="form-section__title-row">
+        <h2 class="form-section__title">Tags</h2>
+        <span class="tag-picker-count" data-tag-picker-target="count"></span>
+    </div>
+
+    {% if form.tags|length == 0 %}
+        <p class="form-hint">
+            Aucun tag disponible.
+            <a href="{{ path('app_tag_new') }}" target="_blank">Créer un tag →</a>
+        </p>
+    {% else %}
+        <div class="tag-picker-grid"
+             data-tag-picker-target="grid"
+             data-action="change->tag-picker#toggle">
+            {% for child in form.tags %}
+                <div class="tag-chip-wrap">
+                    {{ form_widget(child) }}
+                    {{ form_label(child) }}
+                </div>
+            {% endfor %}
+        </div>
+        {{ form_errors(form.tags) }}
+    {% endif %}
+</div>
+
+<div class="form-section">
+    <h2 class="form-section__title">Tarification</h2>
+    <div class="form-grid form-grid--2">
+        <div class="form-group">
+            {{ form_label(form.purchasePriceCents) }}
+            <div class="input-with-unit">
+                {{ form_widget(form.purchasePriceCents, {attr: {class: 'form-control'}}) }}
+                <span class="input-unit">€</span>
+            </div>
+            {{ form_errors(form.purchasePriceCents) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.sellingPriceCents) }}
+            <div class="input-with-unit">
+                {{ form_widget(form.sellingPriceCents, {attr: {class: 'form-control'}}) }}
+                <span class="input-unit">€</span>
+            </div>
+            {{ form_errors(form.sellingPriceCents) }}
+        </div>
+    </div>
+</div>
+
+<div class="form-section" data-controller="image-preview">
+    <div class="form-section__title-row">
+        <h2 class="form-section__title">Images</h2>
+        <span class="tag-picker-count" data-image-preview-target="count"></span>
+    </div>
+
+    {{- form_widget(form.images, {attr: {
+        class: 'img-upload-input',
+        multiple: 'multiple',
+        accept: 'image/*',
+        'data-image-preview-target': 'input',
+        'data-action': 'change->image-preview#change'
+    }}) -}}
+    {{ form_errors(form.images) }}
+
+    {# Zone de dépôt cliquable #}
+    <button type="button" class="img-dropzone" data-action="click->image-preview#pick">
+        <div class="img-dropzone__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5M12 3v8m0 0l-3-3m3 3l3-3"/>
+            </svg>
+        </div>
+        <span class="img-dropzone__label">Cliquez pour sélectionner des images</span>
+        <span class="img-dropzone__hint">JPEG, PNG, WebP, GIF — 5 Mo max par image</span>
+    </button>
+
+    {# État vide #}
+    <p class="img-empty" data-image-preview-target="empty">Aucune image sélectionnée.</p>
+
+    {# Grille d'aperçus #}
+    <div class="img-preview-grid" data-image-preview-target="grid"></div>
+</div>

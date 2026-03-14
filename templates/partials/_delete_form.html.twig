@@ -1,0 +1,18 @@
+{#
+  Reusable delete confirmation form.
+  Parameters:
+    - action: route URL for the delete action
+    - token_id: CSRF token ID (e.g., 'delete-product-' ~ product.id)
+    - label: button label (default: 'Supprimer')
+#}
+<form method="post" action="{{ action }}" class="delete-form" data-controller="confirm-delete">
+    <input type="hidden" name="_token" value="{{ csrf_token(token_id) }}">
+    <button
+        type="submit"
+        class="btn btn--danger btn--sm"
+        data-action="confirm-delete#confirm"
+        data-confirm-delete-message-value="Êtes-vous sûr de vouloir supprimer cet élément ?"
+    >
+        {{ label|default('Supprimer') }}
+    </button>
+</form>
