@@ -9,6 +9,7 @@ services:
       SERVER_NAME: "${SERVER_NAME:-localhost}"
       APP_ENV: "prod"
       APP_DEBUG: "0"
+      APP_RUNTIME: "Runtime\\FrankenPhpSymfony\\Runtime"
       APP_SECRET: "${APP_SECRET}"
       DATABASE_URL: "${DATABASE_URL}"
       MAILER_DSN: "${MAILER_DSN:-null://null}"

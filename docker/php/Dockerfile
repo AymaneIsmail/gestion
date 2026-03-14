@@ -50,6 +50,7 @@ FROM base AS prod
 
 ENV APP_ENV=prod
 ENV FRANKENPHP_CONFIG="worker ./public/index.php"
+ENV APP_RUNTIME=Runtime\\FrankenPhpSymfony\\Runtime
 # Valeurs factices uniquement pour le build — écrasées au runtime par compose.prod.yml
 ENV APP_SECRET=build_secret_placeholder_32chars__
 ENV DATABASE_URL="postgresql://build:build@localhost/build?serverVersion=16&charset=utf8"
