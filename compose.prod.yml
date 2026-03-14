@@ -6,27 +6,46 @@ services:
       target: prod
     restart: unless-stopped
     environment:
-      SERVER_NAME: "${SERVER_NAME}"
+      SERVER_NAME: "${SERVER_NAME:-localhost}"
       APP_ENV: "prod"
+      APP_DEBUG: "0"
       APP_SECRET: "${APP_SECRET}"
       DATABASE_URL: "${DATABASE_URL}"
-      MAILER_DSN: "${MAILER_DSN}"
+      MAILER_DSN: "${MAILER_DSN:-null://null}"
+      MESSENGER_TRANSPORT_DSN: "${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}"
     volumes:
       - uploads:/app/public/uploads
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - gestion
 
   database:
+    image: postgres:16-alpine
     restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-gestion}"
+      POSTGRES_USER: "${POSTGRES_USER:-gestion}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports: []
-
-  mailpit:
-    profiles:
-      - donotstart
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gestion}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gestion
 
 volumes:
+  postgres_data:
   uploads:
+
+networks:
+  gestion:
+    driver: bridge
