@@ -52,13 +52,19 @@ ENV APP_ENV=prod
 ENV FRANKENPHP_CONFIG="worker ./public/index.php"
 # Valeurs factices uniquement pour le build — écrasées au runtime par compose.prod.yml
 ENV APP_SECRET=build_secret_placeholder_32chars__
-ENV DATABASE_URL=postgresql://build:build@localhost/build?serverVersion=16&charset=utf8
+ENV DATABASE_URL="postgresql://build:build@localhost/build?serverVersion=16&charset=utf8"
+ENV DEFAULT_URI=http://localhost
+ENV MAILER_DSN=null://null
+ENV MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
 
 COPY docker/php/conf.d/php.prod.ini /usr/local/etc/php/conf.d/app.ini
 
 COPY --chown=www-data:www-data . .
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction \
+# --no-scripts évite que composer exécute cache:clear automatiquement
+# (qui nécessiterait toutes les vars d'env au build)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
+    && php bin/console cache:clear \
     && php bin/console asset-map:compile \
     && php bin/console cache:warmup --no-optional-warmers
 
