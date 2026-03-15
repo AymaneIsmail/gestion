@@ -618,19 +618,6 @@ img { max-width: 100%; height: auto; display: block; }
     border-color: var(--c-primary-mid);
 }
 
-.product-card__image-wrap {
-    position: relative;
-}
-
-.product-card__margin-badge {
-    position: absolute;
-    top: 0.625rem;
-    right: 0.625rem;
-    z-index: 1;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    backdrop-filter: blur(4px);
-}
 
 .product-card__image-link {
     display: block;
@@ -675,17 +662,11 @@ img { max-width: 100%; height: auto; display: block; }
 .product-card__name a { color: var(--c-text); text-decoration: none; }
 .product-card__name a:hover { color: var(--c-primary); }
 
-.product-card__price-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-}
-
 .product-card__price {
     font-size: 1.0625rem;
     font-weight: 700;
     color: var(--c-primary);
+    margin-bottom: 0.5rem;
     letter-spacing: -0.02em;
 }
 
@@ -1585,25 +1566,6 @@ body.page-auth {
     align-items: center;
 }
 
-/* Pills produit (stock + marge) */
-.product-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
-}
-
-.margin-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.1875rem 0.5rem;
-    border-radius: var(--r-full);
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1;
-}
-.margin-badge--positive { background: #dcfce7; color: #15803d; }
-.margin-badge--negative { background: #fee2e2; color: #b91c1c; }
 
 /* Badge stock */
 .stock-badge {
