@@ -61,8 +61,8 @@ class ProductRepository extends ServiceEntityRepository
             ->orderBy('p.name', 'ASC');
 
         if ($query !== null && $query !== '') {
-            $qb->andWhere('p.name ILIKE :query OR p.reference ILIKE :query')
-               ->setParameter('query', '%' . $query . '%');
+            $qb->andWhere('LOWER(p.name) LIKE :query OR LOWER(p.reference) LIKE :query')
+               ->setParameter('query', '%' . strtolower($query) . '%');
         }
 
         if ($categoryId !== null && $categoryId !== '') {
