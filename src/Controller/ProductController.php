@@ -65,7 +65,7 @@ class ProductController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_product_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_product_show', methods: ['GET'], requirements: ['id' => '[0-9a-f-]{36}'])]
     public function show(
         string $id,
         ProductRepository $productRepository,

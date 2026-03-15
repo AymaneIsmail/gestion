@@ -15,6 +15,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Service\PdfService:
+        arguments:
+            $gotenbergUrl: '%env(GOTENBERG_URL)%'
+
     App\Service\ImageUploader:
         arguments:
             $uploadDirectory: '%upload_directory%'

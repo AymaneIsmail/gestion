@@ -54,6 +54,11 @@ final class ImageUploader
         return $subDirectory . '/' . $filename;
     }
 
+    public function getAbsolutePath(string $relativePath): string
+    {
+        return $this->uploadDirectory . '/' . $relativePath;
+    }
+
     public function delete(string $relativePath): void
     {
         $fullPath = $this->uploadDirectory . '/' . $relativePath;
