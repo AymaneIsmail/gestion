@@ -8,23 +8,27 @@
     <div class="auth-card__header">
         <div class="auth-logo">🏢</div>
         <h1 class="auth-card__title">Nouvelle organisation</h1>
-        <p class="auth-card__subtitle">Créez une organisation et devenez-en membre automatiquement</p>
+        <p class="auth-card__subtitle">Donnez un nom à votre organisation pour commencer</p>
     </div>
 
     {{ form_start(form) }}
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 1.5rem;">
             {{ form_label(form.name) }}
-            {{ form_widget(form.name, { attr: { class: 'form-control' } }) }}
+            {{ form_widget(form.name, { attr: { class: 'form-control', placeholder: 'Ex : Ma Boutique' } }) }}
             {{ form_errors(form.name) }}
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block">
+        <button type="submit" class="btn btn--primary btn--full" style="padding: 0.75rem; font-size: 1rem;">
             Créer l'organisation
         </button>
     {{ form_end(form) }}
 
-    <div class="auth-card__footer">
-        <a href="{{ path('app_organization_select') }}" class="link-muted">← Retour</a>
+    <div class="auth-card__footer" style="margin-top: 1.5rem;">
+        {% if app.user.memberships|length > 0 %}
+            <a href="{{ path('app_organization_select') }}" class="link-muted">← Retour</a>
+        {% else %}
+            <a href="{{ path('app_logout') }}" class="link-muted">Se déconnecter</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

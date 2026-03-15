@@ -13,6 +13,7 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -72,6 +73,12 @@ class ProductType extends AbstractType
                 'scale' => 2,
                 'mapped' => false,
                 'attr' => ['placeholder' => '0,00', 'step' => '0.01', 'min' => '0'],
+            ])
+            ->add('stockQuantity', IntegerType::class, [
+                'label' => 'Stock initial',
+                'required' => false,
+                'attr' => ['placeholder' => '0', 'min' => '0'],
+                'empty_data' => '0',
             ])
             ->add('sellingPriceCents', NumberType::class, [
                 'label' => 'Prix de vente (€)',

@@ -20,69 +20,48 @@ class AppFixtures extends Fixture
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly string $appEnv,
-    ) {
-    }
+    ) {}
 
     public function load(ObjectManager $manager): void
     {
         if ($this->appEnv !== 'dev') {
             throw new \RuntimeException('Les fixtures ne peuvent être chargées qu\'en environnement dev.');
         }
-        // User
+
         $user = new User();
         $user->setEmail('admin@example.com')
-        ->setFullName('Administrateur')
-        ->setPassword($this->passwordHasher->hashPassword($user, 'password'))
-        ->setRoles(['ROLE_ADMIN'])
-        ;
-        
+            ->setFullName('Administrateur')
+            ->setRoles(['ROLE_ADMIN'])
+            ->setPassword($this->passwordHasher->hashPassword($user, 'password'));
         $manager->persist($user);
 
-        // Organization
-        $org = new Organization();
-        $org->setName('Ma Boutique');
+        $org = (new Organization())->setName('Ma Boutique');
         $manager->persist($org);
 
-        // Membership
-        $membership = new Membership($user, $org);
-        $manager->persist($membership);
+        $manager->persist(new Membership($user, $org));
 
-        // Categories
-        $catElec = new Category();
-        $catElec->setName('Électronique')
-        ->setOrganization($org)
-        ->persist($catElec);
-
-        $catVet = new Category();
-        $catVet->setName('Vêtements');
-        $catVet->setOrganization($org);
+        $catElec = (new Category())->setName('Électronique')->setOrganization($org);
+        $catVet  = (new Category())->setName('Vêtements')->setOrganization($org);
+        $manager->persist($catElec);
         $manager->persist($catVet);
 
-        // Tags
-        $tagNew = new Tag();
-        $tagNew->setName('Nouveau');
-        $tagNew->setOrganization($org);
+        $tagNew   = (new Tag())->setName('Nouveau')->setOrganization($org);
+        $tagPromo = (new Tag())->setName('Promotion')->setOrganization($org);
         $manager->persist($tagNew);
-
-        $tagPromo = new Tag();
-        $tagPromo->setName('Promotion');
-        $tagPromo->setOrganization($org);
         $manager->persist($tagPromo);
 
-        // Product
-        $product = new Product();
-        $product->setName('Câble HDMI 2m');
-        $product->setReference('HDMI-2M');
-        $product->setDescription('Câble HDMI haute vitesse, compatible 4K. Longueur : 2 mètres.');
-        $product->setOrganization($org);
-        $product->setCategory($catElec);
-        $product->addTag($tagNew);
+        $price = (new ProductPrice())
+            ->setPurchasePriceCents(599)
+            ->setSellingPriceCents(1499);
 
-        $price = new ProductPrice();
-        $price->setPurchasePriceCents(599);  // 5,99 €
-        $price->setSellingPriceCents(1499);  // 14,99 €
-        $product->setPrice($price);
-
+        $product = (new Product())
+            ->setName('Câble HDMI 2m')
+            ->setReference('HDMI-2M')
+            ->setDescription('Câble HDMI haute vitesse, compatible 4K. Longueur : 2 mètres.')
+            ->setOrganization($org)
+            ->setCategory($catElec)
+            ->addTag($tagNew)
+            ->setPrice($price);
         $manager->persist($product);
 
         $manager->flush();
