@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Organization;
 use App\Entity\User;
+use App\Exception\NoActiveOrganizationException;
 use App\Repository\OrganizationRepository;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -51,7 +52,7 @@ final class OrganizationContext
         $organization = $this->getActiveOrganization();
 
         if ($organization === null) {
-            throw new \LogicException('No active organization in session. Redirect to organization selection.');
+            throw new NoActiveOrganizationException();
         }
 
         return $organization;

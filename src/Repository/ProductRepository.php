@@ -22,18 +22,43 @@ class ProductRepository extends ServiceEntityRepository
     /**
      * @return Product[]
      */
-    public function findByOrganization(Organization $organization): array
+    public function findByOrganization(Organization $organization, ?string $query = null, int $limit = 0, int $offset = 0): array
     {
-        return $this->createQueryBuilder('p')
+        $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.category', 'c')
             ->leftJoin('p.price', 'pr')
             ->leftJoin('p.tags', 't')
-            ->addSelect('c', 'pr', 't')
+            ->leftJoin('p.images', 'i')
+            ->addSelect('c', 'pr', 't', 'i')
             ->where('p.organization = :organization')
             ->setParameter('organization', $organization)
-            ->orderBy('p.name', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('p.name', 'ASC');
+
+        if ($query !== null && $query !== '') {
+            $qb->andWhere('LOWER(p.name) LIKE :query OR LOWER(p.reference) LIKE :query')
+               ->setParameter('query', '%' . strtolower($query) . '%');
+        }
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit)->setFirstResult($offset);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countByOrganization(Organization $organization, ?string $query = null): int
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.organization = :organization')
+            ->setParameter('organization', $organization);
+
+        if ($query !== null && $query !== '') {
+            $qb->andWhere('LOWER(p.name) LIKE :query OR LOWER(p.reference) LIKE :query')
+               ->setParameter('query', '%' . strtolower($query) . '%');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     /**

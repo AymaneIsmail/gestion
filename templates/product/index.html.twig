@@ -3,92 +3,66 @@
 {% block title %}Produits{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Produits</h1>
-        <p class="page-subtitle">{{ products|length }} produit{{ products|length != 1 ? 's' : '' }}</p>
-    </div>
-    <div style="display:flex;gap:0.5rem;">
-        <a href="{{ path('app_product_export_all_pdf') }}"
-           class="btn btn--secondary"
-           target="_blank">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15" style="flex-shrink:0">
-                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
-            </svg>
-            Exporter tout en PDF
-        </a>
-        <a href="{{ path('app_product_new') }}" class="btn btn--primary">
-            + Nouveau produit
-        </a>
-    </div>
-</div>
-
-{% if products is empty %}
-    <div class="empty-state">
-        <div class="empty-state__icon">📦</div>
-        <h2 class="empty-state__title">Aucun produit</h2>
-        <p class="empty-state__description">Commencez par créer votre premier produit.</p>
-        <a href="{{ path('app_product_new') }}" class="btn btn--primary">Créer un produit</a>
-    </div>
-{% else %}
-    <div class="product-grid">
-        {% for product in products %}
-            <div class="product-card">
-                {% if product.images|length > 0 %}
-                    <a href="{{ path('app_product_show', {id: product.id}) }}" class="product-card__image-link">
-                        <img
-                            src="{{ path('app_image_serve', {id: product.images.first.id}) }}"
-                            alt="{{ product.name }}"
-                            class="product-card__image"
-                            loading="lazy"
-                        >
-                    </a>
-                {% else %}
-                    <a href="{{ path('app_product_show', {id: product.id}) }}" class="product-card__image-link product-card__image-link--empty">
-                        <span class="product-card__no-image">📷</span>
-                    </a>
-                {% endif %}
-
-                <div class="product-card__body">
-                    <div class="product-card__meta">
-                        {% if product.category %}
-                            <span class="badge badge--category">{{ product.category.name }}</span>
-                        {% endif %}
-                        {% if product.reference %}
-                            <span class="badge badge--ref">{{ product.reference }}</span>
-                        {% endif %}
-                    </div>
-
-                    <h2 class="product-card__name">
-                        <a href="{{ path('app_product_show', {id: product.id}) }}">{{ product.name }}</a>
-                    </h2>
-
-                    {% if product.price and product.price.sellingPriceCents %}
-                        <div class="product-card__price">
-                            {{ (product.price.sellingPriceCents / 100)|number_format(2, ',', ' ') }} €
-                        </div>
-                    {% endif %}
-
-                    {% if product.tags|length > 0 %}
-                        <div class="product-card__tags">
-                            {% for tag in product.tags %}
-                                <span class="tag">{{ tag.name }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-
-                <div class="product-card__actions">
-                    <a href="{{ path('app_product_edit', {id: product.id}) }}" class="btn btn--secondary btn--sm">
-                        Modifier
-                    </a>
-                    {{ include('partials/_delete_form.html.twig', {
-                        action: path('app_product_delete', {id: product.id}),
-                        token_id: 'delete-product-' ~ product.id,
-                    }) }}
-                </div>
+<div
+    data-controller="product-list"
+    data-product-list-url-value="{{ path('app_product_index') }}"
+    data-has-more="{{ hasMore ? 'true' : 'false' }}"
+>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Produits</h1>
+            <p class="page-subtitle" data-product-list-target="count">{{ total }} produit{{ total != 1 ? 's' : '' }}</p>
+        </div>
+        <div class="page-header__actions">
+            <div class="product-search">
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Rechercher un produit…"
+                    class="product-search__input"
+                    autocomplete="off"
+                    data-product-list-target="search"
+                    data-action="input->product-list#onSearch"
+                >
             </div>
-        {% endfor %}
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+            <a href="{{ path('app_product_export_all_pdf') }}"
+               class="btn btn--secondary"
+               target="_blank">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15" style="flex-shrink:0">
+                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+                </svg>
+                Exporter tout en PDF
+            </a>
+            <a href="{{ path('app_product_new') }}" class="btn btn--primary">
+                + Nouveau produit
+            </a>
+        </div>
     </div>
-{% endif %}
+
+    <div class="product-grid" data-product-list-target="grid">
+        {% for product in products %}
+            {{ include('product/_card.html.twig') }}
+        {% endfor %}
+
+        {% if products is empty %}
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-state__icon">📦</div>
+                <h2 class="empty-state__title">Aucun produit</h2>
+                <p class="empty-state__description">Commencez par créer votre premier produit.</p>
+                <a href="{{ path('app_product_new') }}" class="btn btn--primary">Créer un produit</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div data-product-list-target="spinner" hidden class="product-spinner">
+        <span class="product-spinner__dot"></span>
+        <span class="product-spinner__dot"></span>
+        <span class="product-spinner__dot"></span>
+    </div>
+
+    <div data-product-list-target="sentinel" style="height: 1px;"></div>
+</div>
 {% endblock %}

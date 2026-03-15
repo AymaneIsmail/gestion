@@ -22,15 +22,37 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/produits')]
 class ProductController extends AbstractController
 {
+    private const PAGE_SIZE = 12;
+
     #[Route('', name: 'app_product_index', methods: ['GET'])]
     public function index(
+        Request $request,
         ProductRepository $productRepository,
         OrganizationContext $organizationContext,
     ): Response {
         $organization = $organizationContext->requireActiveOrganization();
+        $query  = $request->query->getString('q') ?: null;
+        $page   = max(1, $request->query->getInt('page', 1));
+        $offset = ($page - 1) * self::PAGE_SIZE;
+
+        $products = $productRepository->findByOrganization($organization, $query, self::PAGE_SIZE, $offset);
+        $total    = $productRepository->countByOrganization($organization, $query);
+        $hasMore  = ($offset + self::PAGE_SIZE) < $total;
+
+        if ($request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
+            $html = '';
+            foreach ($products as $product) {
+                $html .= $this->renderView('product/_card.html.twig', ['product' => $product]);
+            }
+
+            return $this->json(['html' => $html, 'hasMore' => $hasMore, 'total' => $total]);
+        }
 
         return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findByOrganization($organization),
+            'products' => $products,
+            'total'    => $total,
+            'hasMore'  => $hasMore,
+            'query'    => $query ?? '',
         ]);
     }
 
