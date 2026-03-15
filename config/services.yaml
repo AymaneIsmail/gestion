@@ -36,3 +36,4 @@ when@dev:
             autoconfigure: true
             arguments:
                 $uploadDirectory: '%upload_directory%'
+                $appEnv: '%kernel.environment%'
