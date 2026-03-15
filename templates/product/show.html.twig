@@ -61,20 +61,6 @@
 
     {# Product details #}
     <div class="product-info">
-        {# Pills rapides : stock + marge #}
-        <div class="product-pills">
-            <span class="stock-badge" data-in-stock="{{ product.stockQuantity > 0 ? '1' : '0' }}">
-                {{ product.stockQuantity > 0 ? 'En stock' : 'Rupture' }} · {{ product.stockQuantity }}
-            </span>
-            {% if product.price and product.price.purchasePriceCents is not null and product.price.sellingPriceCents is not null %}
-                {% set margin = product.price.sellingPriceCents - product.price.purchasePriceCents %}
-                {% set marginPct = product.price.purchasePriceCents > 0 ? ((margin / product.price.purchasePriceCents) * 100)|number_format(1, ',', ' ') : null %}
-                <span class="margin-badge {{ margin >= 0 ? 'margin-badge--positive' : 'margin-badge--negative' }}">
-                    Marge · {{ (margin / 100)|number_format(2, ',', ' ') }} €{% if marginPct is not null %} ({{ marginPct }}%){% endif %}
-                </span>
-            {% endif %}
-        </div>
-
         <dl class="info-list">
             {% if product.reference %}
                 <div class="info-list__row">
@@ -102,6 +88,11 @@
                     </dd>
                 </div>
             {% endif %}
+
+            <div class="info-list__row">
+                <dt class="info-list__label">Stock</dt>
+                <dd class="info-list__value">{{ product.stockQuantity }}</dd>
+            </div>
 
             {% if product.price %}
                 {% if product.price.purchasePriceCents is not null %}

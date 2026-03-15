@@ -24,20 +24,29 @@
     <div class="product-grid">
         {% for product in products %}
             <div class="product-card">
-                {% if product.images|length > 0 %}
-                    <a href="{{ path('app_product_show', {id: product.id}) }}" class="product-card__image-link">
-                        <img
-                            src="{{ path('app_image_serve', {id: product.images.first.id}) }}"
-                            alt="{{ product.name }}"
-                            class="product-card__image"
-                            loading="lazy"
-                        >
-                    </a>
-                {% else %}
-                    <a href="{{ path('app_product_show', {id: product.id}) }}" class="product-card__image-link product-card__image-link--empty">
-                        <span class="product-card__no-image">📷</span>
-                    </a>
-                {% endif %}
+                <div class="product-card__image-wrap">
+                    {% if product.images|length > 0 %}
+                        <a href="{{ path('app_product_show', {id: product.id}) }}" class="product-card__image-link">
+                            <img
+                                src="{{ path('app_image_serve', {id: product.images.first.id}) }}"
+                                alt="{{ product.name }}"
+                                class="product-card__image"
+                                loading="lazy"
+                            >
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_product_show', {id: product.id}) }}" class="product-card__image-link product-card__image-link--empty">
+                            <span class="product-card__no-image">📷</span>
+                        </a>
+                    {% endif %}
+                    {% if product.price and product.price.purchasePriceCents is not null and product.price.sellingPriceCents is not null %}
+                        {% set margin = product.price.sellingPriceCents - product.price.purchasePriceCents %}
+                        {% set marginPct = product.price.purchasePriceCents > 0 ? ((margin / product.price.purchasePriceCents) * 100)|number_format(1, ',', ' ') : null %}
+                        <span class="product-card__margin-badge margin-badge {{ margin >= 0 ? 'margin-badge--positive' : 'margin-badge--negative' }}">
+                            {{ marginPct is not null ? (margin >= 0 ? '+' : '') ~ marginPct ~ '%' : (margin / 100)|number_format(2, ',', ' ') ~ ' €' }}
+                        </span>
+                    {% endif %}
+                </div>
 
                 <div class="product-card__body">
                     <div class="product-card__meta">
@@ -53,11 +62,16 @@
                         <a href="{{ path('app_product_show', {id: product.id}) }}">{{ product.name }}</a>
                     </h2>
 
-                    {% if product.price and product.price.sellingPriceCents %}
-                        <div class="product-card__price">
-                            {{ (product.price.sellingPriceCents / 100)|number_format(2, ',', ' ') }} €
-                        </div>
-                    {% endif %}
+                    <div class="product-card__price-row">
+                        {% if product.price and product.price.sellingPriceCents %}
+                            <span class="product-card__price">
+                                {{ (product.price.sellingPriceCents / 100)|number_format(2, ',', ' ') }} €
+                            </span>
+                        {% endif %}
+                        <span class="stock-badge" data-in-stock="{{ product.stockQuantity > 0 ? '1' : '0' }}">
+                            {{ product.stockQuantity }}
+                        </span>
+                    </div>
 
                     {% if product.tags|length > 0 %}
                         <div class="product-card__tags">
