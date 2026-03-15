@@ -18,7 +18,9 @@ export default class extends Controller {
             }
         }, { rootMargin: '200px' })
 
-        this._observer.observe(this.sentinelTarget)
+        if (this.hasMore) {
+            this._observer.observe(this.sentinelTarget)
+        }
     }
 
     disconnect() {
@@ -33,6 +35,7 @@ export default class extends Controller {
             this.page = 1
             this.hasMore = true
             this.gridTarget.innerHTML = ''
+            this._observer.observe(this.sentinelTarget)
             this._loadMore()
         }, 200)
     }
@@ -40,7 +43,7 @@ export default class extends Controller {
     async _loadMore() {
         if (this.loading || !this.hasMore) return
         this.loading = true
-        this.spinnerTarget.hidden = false
+        this.spinnerTarget.classList.add('is-loading')
 
         const params = new URLSearchParams({ page: this.page })
         if (this.query) params.set('q', this.query)
@@ -55,12 +58,18 @@ export default class extends Controller {
             this.hasMore = data.hasMore
             this.page++
 
+            if (!this.hasMore) {
+                this._observer.unobserve(this.sentinelTarget)
+            }
+
             if (this.hasCountTarget) {
                 this.countTarget.textContent = `${data.total} produit${data.total !== 1 ? 's' : ''}`
             }
+        } catch (e) {
+            console.error('Erreur chargement produits', e)
         } finally {
             this.loading = false
-            this.spinnerTarget.hidden = true
+            this.spinnerTarget.classList.remove('is-loading')
         }
     }
 }

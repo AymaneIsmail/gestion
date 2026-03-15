@@ -45,7 +45,7 @@ class ProductController extends AbstractController
                 $html .= $this->renderView('product/_card.html.twig', ['product' => $product]);
             }
 
-            return $this->json(['html' => $html, 'hasMore' => $hasMore, 'total' => $total]);
+            return $this->json(['html' => $html, 'hasMore' => $hasMore, 'total' => $total, 'count' => count($products)]);
         }
 
         return $this->render('product/index.html.twig', [

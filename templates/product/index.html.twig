@@ -7,6 +7,7 @@
     data-controller="product-list"
     data-product-list-url-value="{{ path('app_product_index') }}"
     data-has-more="{{ hasMore ? 'true' : 'false' }}"
+    data-total="{{ total }}"
 >
     <div class="page-header">
         <div>
@@ -57,7 +58,7 @@
         {% endif %}
     </div>
 
-    <div data-product-list-target="spinner" hidden class="product-spinner">
+    <div data-product-list-target="spinner" class="product-spinner">
         <span class="product-spinner__dot"></span>
         <span class="product-spinner__dot"></span>
         <span class="product-spinner__dot"></span>

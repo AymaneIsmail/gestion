@@ -141,8 +141,19 @@
         </dl>
 
         {% if product.description %}
-            <div class="product-description">
-                <h3>Description</h3>
+            <div class="product-description" data-controller="clipboard" data-clipboard-text-value="{{ product.description }}">
+                <div class="product-description__header">
+                    <h3>Description</h3>
+                    <button
+                        type="button"
+                        class="btn btn--secondary btn--sm"
+                        data-action="clipboard#copy"
+                        data-clipboard-target="button"
+                    >
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>
+                        Copier
+                    </button>
+                </div>
                 <p>{{ product.description|nl2br }}</p>
             </div>
         {% endif %}
