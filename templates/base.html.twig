@@ -22,7 +22,7 @@
     <div class="container">
         <a href="{{ path('app_product_index') }}" class="site-logo">
             <span class="site-logo__icon">📦</span>
-            <span class="site-logo__text">Gestion</span>
+            <span class="site-logo__text">{{ active_organization() ? active_organization().name : 'Gestion' }}</span>
         </a>
 
         {# Navigation desktop + tiroir mobile #}

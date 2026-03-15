@@ -33,6 +33,14 @@
         </form>
     {% endif %}
 
+    {% if is_granted('ROLE_ADMIN') %}
+        <div style="margin-top: 1rem; text-align: center;">
+            <a href="{{ path('app_organization_create') }}" class="btn btn-secondary">
+                + Créer une organisation
+            </a>
+        </div>
+    {% endif %}
+
     <div class="auth-card__footer">
         <a href="{{ path('app_logout') }}" class="link-muted">Se déconnecter</a>
     </div>

@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer une organisation{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-card__header">
+        <div class="auth-logo">🏢</div>
+        <h1 class="auth-card__title">Nouvelle organisation</h1>
+        <p class="auth-card__subtitle">Créez une organisation et devenez-en membre automatiquement</p>
+    </div>
+
+    {{ form_start(form) }}
+        <div class="form-group">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name, { attr: { class: 'form-control' } }) }}
+            {{ form_errors(form.name) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+            Créer l'organisation
+        </button>
+    {{ form_end(form) }}
+
+    <div class="auth-card__footer">
+        <a href="{{ path('app_organization_select') }}" class="link-muted">← Retour</a>
+    </div>
+</div>
+{% endblock %}

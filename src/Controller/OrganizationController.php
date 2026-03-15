@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Membership;
+use App\Entity\Organization;
 use App\Entity\User;
+use App\Form\OrganizationType;
 use App\Repository\OrganizationRepository;
 use App\Service\OrganizationContext;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
 #[Route('/organisation')]
@@ -57,6 +62,32 @@ class OrganizationController extends AbstractController
 
         return $this->render('organization/select.html.twig', [
             'organizations' => $organizations,
+        ]);
+    }
+
+    #[Route('/creer', name: 'app_organization_create')]
+    public function create(
+        Request $request,
+        EntityManagerInterface $em,
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        $organization = new Organization();
+        $form = $this->createForm(OrganizationType::class, $organization);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($organization);
+            $em->persist(new Membership($user, $organization));
+            $em->flush();
+
+            $this->addFlash('success', 'Organisation créée avec succès.');
+
+            return $this->redirectToRoute('app_organization_select');
+        }
+
+        return $this->render('organization/create.html.twig', [
+            'form' => $form,
         ]);
     }
 

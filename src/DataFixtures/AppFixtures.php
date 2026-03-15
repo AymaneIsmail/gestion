@@ -30,9 +30,12 @@ class AppFixtures extends Fixture
         }
         // User
         $user = new User();
-        $user->setEmail('admin@example.com');
-        $user->setFullName('Administrateur');
-        $user->setPassword($this->passwordHasher->hashPassword($user, 'password'));
+        $user->setEmail('admin@example.com')
+        ->setFullName('Administrateur')
+        ->setPassword($this->passwordHasher->hashPassword($user, 'password'))
+        ->setRoles(['ROLE_ADMIN'])
+        ;
+        
         $manager->persist($user);
 
         // Organization
@@ -46,9 +49,9 @@ class AppFixtures extends Fixture
 
         // Categories
         $catElec = new Category();
-        $catElec->setName('Électronique');
-        $catElec->setOrganization($org);
-        $manager->persist($catElec);
+        $catElec->setName('Électronique')
+        ->setOrganization($org)
+        ->persist($catElec);
 
         $catVet = new Category();
         $catVet->setName('Vêtements');
