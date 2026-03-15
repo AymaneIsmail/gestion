@@ -14,10 +14,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
-    App\DataFixtures\AppFixtures:
-        arguments:
-            $uploadDirectory: '%upload_directory%'
+            - '../src/DataFixtures/'
 
     App\Service\PdfService:
         arguments:
@@ -31,3 +28,11 @@ services:
         arguments:
             $uploadDirectory: '%upload_directory%'
         tags: ['controller.service_arguments']
+
+when@dev:
+    services:
+        App\DataFixtures\AppFixtures:
+            autowire: true
+            autoconfigure: true
+            arguments:
+                $uploadDirectory: '%upload_directory%'
