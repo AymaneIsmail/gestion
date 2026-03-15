@@ -14,6 +14,7 @@ services:
       DATABASE_URL: "${DATABASE_URL}"
       MAILER_DSN: "${MAILER_DSN:-null://null}"
       MESSENGER_TRANSPORT_DSN: "${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}"
+      GOTENBERG_URL: "${GOTENBERG_URL:-http://gotenberg:3000}"
     volumes:
       - uploads:/app/public/uploads
     expose:
@@ -21,6 +22,14 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      gotenberg:
+        condition: service_started
+    networks:
+      - gestion
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
     networks:
       - gestion
 
