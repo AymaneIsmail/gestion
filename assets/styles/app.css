@@ -1565,6 +1565,26 @@ body.page-auth {
     align-items: center;
 }
 
+/* Pills produit (stock + marge) */
+.product-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.margin-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1875rem 0.5rem;
+    border-radius: var(--r-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+}
+.margin-badge--positive { background: #dcfce7; color: #15803d; }
+.margin-badge--negative { background: #fee2e2; color: #b91c1c; }
+
 /* Badge stock */
 .stock-badge {
     display: inline-flex;
