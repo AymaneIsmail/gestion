@@ -16,6 +16,7 @@ export default class extends Controller {
         const isOpen = this.menuTarget.classList.toggle('is-open');
 
         if (isOpen) {
+            this._adjustPosition();
             document.addEventListener('click', this._onOutsideClick);
             document.addEventListener('keydown', this._onKeydown);
         } else {
@@ -23,8 +24,28 @@ export default class extends Controller {
         }
     }
 
+    _adjustPosition() {
+        const menu = this.menuTarget;
+        // Reset pour recalculer
+        menu.style.right = '';
+        menu.style.left = '';
+
+        const rect = menu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+            // Déborde à droite → aligner à droite du trigger
+            menu.style.left = 'auto';
+            menu.style.right = '0';
+        } else if (rect.left < 0) {
+            // Déborde à gauche → aligner à gauche du trigger
+            menu.style.right = 'auto';
+            menu.style.left = '0';
+        }
+    }
+
     close() {
         this.menuTarget.classList.remove('is-open');
+        this.menuTarget.style.right = '';
+        this.menuTarget.style.left = '';
         this._removeListeners();
     }
 

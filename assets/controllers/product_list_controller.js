@@ -1,12 +1,11 @@
 import { Controller } from '@hotwired/stimulus'
 
 export default class extends Controller {
-    static targets = ['grid', 'search', 'sentinel', 'count', 'spinner']
+    static targets = ['grid', 'sentinel', 'count', 'spinner']
     static values = { url: String }
 
     connect() {
         this.page = 1
-        this.query = this.searchTarget.value
         this.loading = false
         this.hasMore = this.element.dataset.hasMore === 'true'
 
@@ -28,25 +27,12 @@ export default class extends Controller {
         clearTimeout(this._debounceTimer)
     }
 
-    onSearch() {
-        clearTimeout(this._debounceTimer)
-        this._debounceTimer = setTimeout(() => {
-            this.query = this.searchTarget.value
-            this.page = 1
-            this.hasMore = true
-            this.gridTarget.innerHTML = ''
-            this._observer.observe(this.sentinelTarget)
-            this._loadMore()
-        }, 200)
-    }
-
     async _loadMore() {
         if (this.loading || !this.hasMore) return
         this.loading = true
         this.spinnerTarget.classList.add('is-loading')
 
         const params = new URLSearchParams({ page: this.page })
-        if (this.query) params.set('q', this.query)
 
         try {
             const res = await fetch(`${this.urlValue}?${params}`, {

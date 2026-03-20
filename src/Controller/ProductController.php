@@ -31,12 +31,11 @@ class ProductController extends AbstractController
         OrganizationContext $organizationContext,
     ): Response {
         $organization = $organizationContext->requireActiveOrganization();
-        $query  = $request->query->getString('q') ?: null;
         $page   = max(1, $request->query->getInt('page', 1));
         $offset = ($page - 1) * self::PAGE_SIZE;
 
-        $products = $productRepository->findByOrganization($organization, $query, self::PAGE_SIZE, $offset);
-        $total    = $productRepository->countByOrganization($organization, $query);
+        $products = $productRepository->findByOrganization($organization, null, self::PAGE_SIZE, $offset);
+        $total    = $productRepository->countByOrganization($organization, null);
         $hasMore  = ($offset + self::PAGE_SIZE) < $total;
 
         if ($request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
@@ -52,7 +51,6 @@ class ProductController extends AbstractController
             'products' => $products,
             'total'    => $total,
             'hasMore'  => $hasMore,
-            'query'    => $query ?? '',
         ]);
     }
 
@@ -85,6 +83,43 @@ class ProductController extends AbstractController
         return $this->render('product/new.html.twig', [
             'form' => $form,
         ]);
+    }
+
+    #[Route('/autocomplete', name: 'app_product_autocomplete', methods: ['GET'])]
+    public function autocomplete(
+        Request $request,
+        ProductRepository $productRepository,
+        OrganizationContext $organizationContext,
+    ): Response {
+        $organization = $organizationContext->requireActiveOrganization();
+        $query = $request->query->getString('q') ?: null;
+
+        if ($query === null || \strlen($query) < 2) {
+            return $this->json([]);
+        }
+
+        $products = $productRepository->findByOrganization($organization, $query, 6, 0);
+
+        $results = [];
+        foreach ($products as $product) {
+            $images   = $product->getImages();
+            $firstImg = $images->isEmpty() ? null : $images->first();
+            $price    = $product->getPrice();
+
+            $results[] = [
+                'id'       => (string) $product->getId(),
+                'name'     => $product->getName(),
+                'price'    => ($price && $price->getSellingPriceCents())
+                    ? number_format($price->getSellingPriceCents() / 100, 2, ',', "\u{202F}") . ' €'
+                    : null,
+                'imageUrl' => $firstImg
+                    ? $this->generateUrl('app_image_serve', ['id' => $firstImg->getId()])
+                    : null,
+                'url'      => $this->generateUrl('app_product_show', ['id' => $product->getId()]),
+            ];
+        }
+
+        return $this->json($results);
     }
 
     #[Route('/{id}', name: 'app_product_show', methods: ['GET'], requirements: ['id' => '[0-9a-f-]{36}'])]

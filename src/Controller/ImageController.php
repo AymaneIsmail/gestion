@@ -45,4 +45,30 @@ class ImageController extends AbstractController
             ->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE)
             ->deleteFileAfterSend(false);
     }
+
+    #[Route('/{id}/telecharger', name: 'app_image_download', methods: ['GET'])]
+    public function download(
+        string $id,
+        ProductImageRepository $imageRepository,
+        OrganizationContext $organizationContext,
+    ): BinaryFileResponse {
+        $organization = $organizationContext->requireActiveOrganization();
+        $image = $imageRepository->find($id);
+
+        if ($image === null || $image->getProduct()->getOrganization() !== $organization) {
+            throw new NotFoundHttpException();
+        }
+
+        $fullPath = $this->uploadDirectory . '/' . $image->getPath();
+
+        if (!is_file($fullPath)) {
+            throw new NotFoundHttpException();
+        }
+
+        $filename = $image->getOriginalName() ?? basename($image->getPath());
+
+        return (new BinaryFileResponse($fullPath))
+            ->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename)
+            ->deleteFileAfterSend(false);
+    }
 }

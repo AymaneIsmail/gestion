@@ -1,0 +1,74 @@
+<div
+    class="global-search-wrapper"
+    data-controller="global-search"
+    data-global-search-url-value="{{ path('app_product_autocomplete') }}"
+>
+    {# Barre de recherche desktop #}
+    <div class="global-search">
+        <div class="global-search__field">
+            <svg class="global-search__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+            </svg>
+            <input
+                type="search"
+                class="global-search__input"
+                placeholder="Rechercher un produit…"
+                autocomplete="off"
+                aria-label="Rechercher un produit"
+                data-global-search-target="input"
+                data-action="input->global-search#onInput keydown->global-search#onKeydown"
+            >
+        </div>
+        <div class="global-search__dropdown" data-global-search-target="dropdown" hidden>
+            <div class="global-search__results" data-global-search-target="results"></div>
+        </div>
+    </div>
+
+    {# Bouton loupe mobile #}
+    <button
+        class="search-btn-mobile"
+        type="button"
+        aria-label="Rechercher un produit"
+        data-action="click->global-search#openDrawer"
+    >
+        <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+        </svg>
+    </button>
+
+    {# Drawer de recherche mobile #}
+    <div class="search-drawer" data-global-search-target="drawer" aria-hidden="true">
+        <div class="search-drawer__overlay" data-action="click->global-search#closeDrawer"></div>
+        <div class="search-drawer__panel">
+            <div class="search-drawer__header">
+                <div class="search-drawer__field">
+                    <svg class="search-drawer__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                    </svg>
+                    <input
+                        type="search"
+                        class="search-drawer__input"
+                        placeholder="Rechercher un produit…"
+                        autocomplete="off"
+                        aria-label="Rechercher un produit"
+                        data-global-search-target="drawerInput"
+                        data-action="input->global-search#onDrawerInput keydown->global-search#onDrawerKeydown"
+                    >
+                </div>
+                <button
+                    type="button"
+                    class="search-drawer__close"
+                    aria-label="Fermer la recherche"
+                    data-action="click->global-search#closeDrawer"
+                >
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="search-drawer__results" data-global-search-target="drawerResults">
+                <p class="search-drawer__hint">Tapez au moins 2 caractères pour rechercher…</p>
+            </div>
+        </div>
+    </div>
+</div>
