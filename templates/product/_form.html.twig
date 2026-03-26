@@ -19,13 +19,14 @@
             {{ form_errors(form.category) }}
         </div>
         <div class="form-group form-group--full"
-             {% if product is defined %}
              data-controller="generate-description"
+             {% if product is defined %}
              data-generate-description-url-value="{{ path('app_product_generate_description', {id: product.id}) }}"
+             {% else %}
+             data-generate-description-new-url-value="{{ path('app_product_generate_description_new') }}"
              {% endif %}>
             <div class="form-label-row">
                 {{ form_label(form.description) }}
-                {% if product is defined %}
                 <button type="button"
                         class="btn-generate-desc"
                         data-generate-description-target="button"
@@ -41,19 +42,16 @@
                     </svg>
                     Générer avec l'IA
                 </button>
-                {% endif %}
             </div>
             <div class="ai-textarea-wrap">
                 {{ form_widget(form.description, {attr: {
                     class: 'form-control',
                     'data-generate-description-target': product is defined ? 'textarea' : ''
                 }}) }}
-                {% if product is defined %}
                 <div class="ai-overlay" data-generate-description-target="overlay" hidden>
                     <span class="ai-overlay__icon" data-generate-description-target="overlayIcon">🔍</span>
                     <span class="ai-overlay__label" data-generate-description-target="overlayLabel">Génération en cours…</span>
                 </div>
-                {% endif %}
             </div>
             {{ form_errors(form.description) }}
         </div>

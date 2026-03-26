@@ -14,16 +14,33 @@ export default class extends Controller {
     #stepInterval = null;
 
     async generate() {
+        // Sur la page création, on lit les champs du formulaire
+        const body = this.urlValue
+            ? null
+            : this.#buildFormBody();
+
+        if (body !== null && !body.get('name')) {
+            alert('Renseignez au minimum le nom du produit avant de générer une description.');
+            return;
+        }
+
         this.buttonTarget.disabled = true;
         this.spinnerTarget.hidden = false;
         this.overlayTarget.hidden = false;
         this.#startSteps();
 
         try {
-            const response = await fetch(this.urlValue, {
+            const url = this.urlValue || this.element.dataset.generateDescriptionNewUrlValue;
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: body ?? undefined,
             });
+
+            const contentType = response.headers.get('content-type') ?? '';
+            if (!contentType.includes('application/json')) {
+                throw new Error(`Réponse inattendue du serveur (HTTP ${response.status}). Vérifiez que vous êtes bien connecté.`);
+            }
 
             const data = await response.json();
 
@@ -64,5 +81,18 @@ export default class extends Controller {
     #stopSteps() {
         clearInterval(this.#stepInterval);
         this.#stepInterval = null;
+    }
+
+    #buildFormBody() {
+        const form = this.element.closest('form');
+        const body = new FormData();
+        body.append('name',      form.querySelector('[name$="[name]"]')?.value?.trim()      ?? '');
+        body.append('reference', form.querySelector('[name$="[reference]"]')?.value?.trim() ?? '');
+
+        const categorySelect = form.querySelector('[name$="[category]"]');
+        const categoryText   = categorySelect?.options[categorySelect.selectedIndex]?.text ?? '';
+        body.append('category', categoryText === '-- Aucune catégorie --' ? '' : categoryText);
+
+        return body;
     }
 }

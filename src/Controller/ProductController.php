@@ -142,6 +142,30 @@ class ProductController extends AbstractController
         ]);
     }
 
+    #[Route('/generer-description', name: 'app_product_generate_description_new', methods: ['POST'])]
+    public function generateDescriptionFromForm(
+        Request $request,
+        AiDescriptionGenerator $generator,
+    ): JsonResponse {
+        if (!$generator->isEnabled()) {
+            return $this->json(['error' => 'La génération IA est désactivée.'], 503);
+        }
+
+        $name      = trim($request->request->getString('name'));
+        $reference = trim($request->request->getString('reference')) ?: null;
+        $category  = trim($request->request->getString('category')) ?: null;
+
+        if ($name === '') {
+            return $this->json(['error' => 'Le nom du produit est requis pour générer une description.'], 422);
+        }
+
+        try {
+            return $this->json(['description' => $generator->generate($name, $reference, $category)]);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     #[Route('/{id}/generer-description', name: 'app_product_generate_description', methods: ['POST'])]
     public function generateDescription(
         string $id,
