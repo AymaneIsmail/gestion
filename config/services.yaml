@@ -20,6 +20,17 @@ services:
         arguments:
             $gotenbergUrl: '%env(GOTENBERG_URL)%'
 
+    App\Service\PdfProductExtractor:
+        arguments:
+            $anthropicApiKey: '%env(ANTHROPIC_API_KEY)%'
+
+    App\Service\AiDescriptionGenerator:
+        arguments:
+            $anthropicApiKey: '%env(ANTHROPIC_API_KEY)%'
+            $openaiApiKey: '%env(OPENAI_API_KEY)%'
+            $provider: '%env(AI_PROVIDER)%'
+            $enabled: '%env(bool:AI_DESCRIPTION_ENABLED)%'
+
     App\Service\ImageUploader:
         arguments:
             $uploadDirectory: '%upload_directory%'

@@ -10,11 +10,13 @@ use App\Entity\ProductPrice;
 use App\Form\ProductType;
 use App\Repository\ProductImageRepository;
 use App\Repository\ProductRepository;
+use App\Service\AiDescriptionGenerator;
 use App\Service\ImageUploader;
 use App\Service\OrganizationContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -138,6 +140,39 @@ class ProductController extends AbstractController
         return $this->render('product/show.html.twig', [
             'product' => $product,
         ]);
+    }
+
+    #[Route('/{id}/generer-description', name: 'app_product_generate_description', methods: ['POST'])]
+    public function generateDescription(
+        string $id,
+        ProductRepository $productRepository,
+        OrganizationContext $organizationContext,
+        AiDescriptionGenerator $generator,
+    ): JsonResponse {
+        if (!$generator->isEnabled()) {
+            return $this->json([
+                'error' => 'La génération IA est désactivée. Vérifiez votre clé API dans le fichier .env.',
+            ], 503);
+        }
+
+        $organization = $organizationContext->requireActiveOrganization();
+        $product = $productRepository->findOneByOrganization($id, $organization);
+
+        if ($product === null) {
+            return $this->json(['error' => 'Produit introuvable.'], 404);
+        }
+
+        try {
+            $description = $generator->generate(
+                $product->getName(),
+                $product->getReference(),
+                $product->getCategory()?->getName(),
+            );
+
+            return $this->json(['description' => $description]);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     #[Route('/{id}/modifier', name: 'app_product_edit', methods: ['GET', 'POST'])]

@@ -28,11 +28,25 @@
             <a href="{{ path('app_product_show', {id: product.id}) }}">{{ product.name }}</a>
         </h2>
 
-        {% if product.price and product.price.sellingPriceCents %}
-            <div class="product-card__price">
-                {{ (product.price.sellingPriceCents / 100)|number_format(2, ',', ' ') }} €
-            </div>
-        {% endif %}
+        <div class="product-card__prices">
+            {% if product.price and product.price.sellingPriceCents %}
+                <span class="product-card__price">
+                    {{ (product.price.sellingPriceCents / 100)|number_format(2, ',', "\u{202F}") }} €
+                </span>
+            {% endif %}
+            {% if product.price and product.price.purchasePriceCents %}
+                <span class="product-card__purchase-price">
+                    Achat : {{ (product.price.purchasePriceCents / 100)|number_format(2, ',', "\u{202F}") }} €
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="product-card__stock {% if product.stockQuantity == 0 %}product-card__stock--empty{% endif %}">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" aria-hidden="true">
+                <path d="M1.5 2A1.5 1.5 0 000 3.5v2A1.5 1.5 0 001.5 7h13A1.5 1.5 0 0016 5.5v-2A1.5 1.5 0 0014.5 2h-13zM0 9.5A1.5 1.5 0 011.5 8h13A1.5 1.5 0 0116 9.5v2A1.5 1.5 0 0114.5 13h-13A1.5 1.5 0 010 11.5v-2z"/>
+            </svg>
+            {{ product.stockQuantity }} unité{{ product.stockQuantity != 1 ? 's' : '' }}
+        </div>
 
         {% if product.tags|length > 0 %}
             <div class="product-card__tags">

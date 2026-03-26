@@ -12,97 +12,86 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
 
-{% if app.user %}
 {% set route = app.request.attributes.get('_route') %}
-<header class="site-header" data-controller="nav">
 
-    {# Overlay sombre derrière le menu mobile #}
-    <div class="nav-overlay" data-nav-target="overlay" data-action="click->nav#close"></div>
+<div class="app-layout{% if not app.user %} app-layout--auth{% endif %}"{% if app.user %} data-controller="nav"{% endif %}>
 
-    <div class="container">
-        <a href="{{ path('app_product_index') }}" class="site-logo">
-            <span class="site-logo__icon">📦</span>
-            <span class="site-logo__text">{{ active_organization() ? active_organization().name : 'Gestion' }}</span>
-        </a>
+    {% if app.user %}
+        {# Overlay mobile #}
+        <div class="sidebar-overlay" data-nav-target="overlay" data-action="click->nav#close"></div>
 
-        {# Navigation desktop + tiroir mobile #}
-        <nav class="site-nav" data-nav-target="menu" aria-label="Navigation principale">
-            <a href="{{ path('app_product_index') }}"
-               class="nav-link {% if route starts with 'app_product' %}nav-link--active{% endif %}">
-                <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v1H2V4zm0 3h16v9a2 2 0 01-2 2H4a2 2 0 01-2-2V7zm5 3a1 1 0 000 2h6a1 1 0 000-2H7z"/>
-                </svg>
-                Produits
-            </a>
-            <a href="{{ path('app_category_index') }}"
-               class="nav-link {% if route starts with 'app_category' %}nav-link--active{% endif %}">
-                <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 8a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zm6-6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zm0 8a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-                </svg>
-                Catégories
-            </a>
-            <a href="{{ path('app_tag_index') }}"
-               class="nav-link {% if route starts with 'app_tag' %}nav-link--active{% endif %}">
-                <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-                </svg>
-                Tags
-            </a>
-            <a href="{{ path('app_stock_index') }}"
-               class="nav-link {% if route starts with 'app_stock' %}nav-link--active{% endif %}">
-                <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
-                    <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/>
-                </svg>
-                Stock
-            </a>
+        {# ── Sidebar ── #}
+        <aside class="sidebar" data-nav-target="menu">
+            <div class="sidebar__logo">
+                <a href="{{ path('app_product_index') }}" class="site-logo">
+                    <span class="site-logo__icon">📦</span>
+                    <span class="site-logo__text">{{ active_organization() ? active_organization().name : 'Gestion' }}</span>
+                </a>
+            </div>
 
-            {# Liens user visibles seulement dans le menu mobile #}
-            <div class="nav-divider"></div>
-            <a href="{{ path('app_organization_switch') }}" class="nav-link nav-link--mobile-only">
-                <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
-                </svg>
-                Changer d'organisation
-            </a>
-            <a href="{{ path('app_logout') }}" class="nav-link nav-link--mobile-only nav-link--danger">
-                <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
-                </svg>
-                Déconnexion
-            </a>
-        </nav>
-
-        {{ include('partials/_global_search.html.twig') }}
-
-        <div class="header-right">
-            {# User menu desktop #}
-            <div class="user-menu" data-controller="dropdown">
-                <button class="user-menu__trigger" data-action="click->dropdown#toggle" type="button" aria-haspopup="true">
-                    <span class="user-avatar">{{ app.user.fullName|slice(0,1)|upper }}</span>
-                    <span class="user-menu__name">{{ app.user.fullName }}</span>
-                    <svg class="user-menu__chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            <nav class="sidebar__nav" aria-label="Navigation principale">
+                <a href="{{ path('app_product_index') }}"
+                   class="nav-link {% if route starts with 'app_product' %}nav-link--active{% endif %}">
+                    <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v1H2V4zm0 3h16v9a2 2 0 01-2 2H4a2 2 0 01-2-2V7zm5 3a1 1 0 000 2h6a1 1 0 000-2H7z"/>
                     </svg>
-                </button>
-                <div class="user-menu__dropdown" data-dropdown-target="menu" role="menu">
-                    <div class="user-menu__header">
-                        <span class="user-menu__full-name">{{ app.user.fullName }}</span>
-                        <span class="user-menu__email">{{ app.user.userIdentifier }}</span>
+                    Produits
+                </a>
+                <a href="{{ path('app_category_index') }}"
+                   class="nav-link {% if route starts with 'app_category' %}nav-link--active{% endif %}">
+                    <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 8a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zm6-6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zm0 8a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                    </svg>
+                    Catégories
+                </a>
+                <a href="{{ path('app_tag_index') }}"
+                   class="nav-link {% if route starts with 'app_tag' %}nav-link--active{% endif %}">
+                    <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                    </svg>
+                    Tags
+                </a>
+                <a href="{{ path('app_stock_index') }}"
+                   class="nav-link {% if route starts with 'app_stock' %}nav-link--active{% endif %}">
+                    <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
+                        <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    Stock
+                </a>
+            </nav>
+
+            <div class="sidebar__footer">
+                <div class="sidebar__user">
+                    <span class="user-avatar">{{ app.user.fullName|slice(0,1)|upper }}</span>
+                    <div class="sidebar__user-info">
+                        <span class="sidebar__user-name">{{ app.user.fullName }}</span>
+                        <span class="sidebar__user-email">{{ app.user.userIdentifier }}</span>
                     </div>
-                    <div class="user-menu__divider"></div>
-                    <a href="{{ path('app_organization_switch') }}" class="user-menu__item" role="menuitem">
-                        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
-                        Changer d'organisation
+                </div>
+                <div class="sidebar__user-actions">
+                    <a href="{{ path('app_organization_switch') }}" class="nav-link">
+                        <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                        </svg>
+                        Changer d'org.
                     </a>
-                    <a href="{{ path('app_logout') }}" class="user-menu__item user-menu__item--danger" role="menuitem">
-                        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/></svg>
+                    <a href="{{ path('app_logout') }}" class="nav-link nav-link--danger">
+                        <svg class="nav-link__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                        </svg>
                         Déconnexion
                     </a>
                 </div>
             </div>
+        </aside>
+    {% endif %}
 
-            {# Bouton burger mobile #}
+    {# ── Contenu principal ── #}
+    <div class="app-content">
+
+        {% if app.user %}
+        <div class="topbar">
             <button
                 class="burger"
                 type="button"
@@ -115,34 +104,37 @@
                 <span class="burger__bar"></span>
                 <span class="burger__bar"></span>
             </button>
+
+            {{ include('partials/_global_search.html.twig') }}
         </div>
-    </div>
-</header>
-{% endif %}
+        {% endif %}
 
-<main class="site-main">
-    <div class="container">
-        {% for type, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="alert alert--{{ type }}" data-controller="flash">
-                    <div class="alert__body">
-                        {% if type == 'success' %}
-                            <svg class="alert__icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                        {% elseif type == 'error' %}
-                            <svg class="alert__icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                        {% endif %}
-                        <span>{{ message }}</span>
-                    </div>
-                    <button type="button" class="alert__close" data-action="flash#close" aria-label="Fermer">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-                    </button>
-                </div>
-            {% endfor %}
-        {% endfor %}
+        <main class="site-main">
+            <div class="container">
+                {% for type, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert--{{ type }}" data-controller="flash">
+                            <div class="alert__body">
+                                {% if type == 'success' %}
+                                    <svg class="alert__icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                {% elseif type == 'error' %}
+                                    <svg class="alert__icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                {% endif %}
+                                <span>{{ message }}</span>
+                            </div>
+                            <button type="button" class="alert__close" data-action="flash#close" aria-label="Fermer">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
 
-        {% block content %}{% endblock %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
     </div>
-</main>
+</div>
 
 </body>
 </html>

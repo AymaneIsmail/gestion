@@ -1,0 +1,197 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Révision — {{ rows|length }} produit(s) détecté(s){% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav class="breadcrumb">
+            <a href="{{ path('app_product_index') }}">Produits</a>
+            <span>›</span>
+            <a href="{{ path('app_import_pdf') }}">Import PDF</a>
+            <span>›</span>
+            <span>Révision</span>
+        </nav>
+        <h1 class="page-title">Révision de l'import</h1>
+        <p class="page-subtitle">
+            {{ rows|length }} produit(s) détecté(s)
+            {% set matchCount = rows|filter(r => r.match.hasMatch())|length %}
+            {% if matchCount > 0 %}
+                · <span class="text-match">{{ matchCount }} correspondance(s) trouvée(s)</span>
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<form
+    method="post"
+    action="{{ path('app_import_pdf_confirm') }}"
+    data-import-catalog="{{ catalog|json_encode }}"
+>
+    <input type="hidden" name="_token" value="{{ csrf_token('import-confirm') }}">
+
+    <div class="import-rows">
+        {% for row in rows %}
+        {% set p = row.product %}
+        {% set match = row.match %}
+        {% set i = row.index %}
+        {% set defaultUpdate = match.defaultAction == 'update' %}
+
+        <div class="import-row" data-controller="import-row">
+
+            {# ── Header ── #}
+            <div class="import-row__header">
+                <label class="import-row__include" data-action="change->import-row#toggleInclude">
+                    <input type="checkbox" name="include[{{ i }}]" value="1" checked
+                           data-import-row-target="includeCheck">
+                    <span class="import-row__name">{{ p.name }}</span>
+                </label>
+                <div class="import-row__badges">
+                    {% if match.confidence == 'strong' %}
+                        <span class="match-badge match-badge--strong">⚡ Match fort</span>
+                    {% elseif match.confidence == 'probable' %}
+                        <span class="match-badge match-badge--probable">≈ Probable</span>
+                    {% else %}
+                        <span class="match-badge match-badge--none">+ Nouveau</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# ── Corps ── #}
+            <div class="import-row__body" data-import-row-target="body">
+
+                {# Champs extraits #}
+                <div class="import-row__fields">
+                    <div class="import-row__field">
+                        <label class="import-row__label">Nom</label>
+                        <input type="text" name="products[{{ i }}][name]" value="{{ p.name }}"
+                               class="form-control form-control--sm" required>
+                    </div>
+                    <div class="import-row__field">
+                        <label class="import-row__label">Référence</label>
+                        <input type="text" name="products[{{ i }}][reference]"
+                               value="{{ p.reference ?? '' }}" class="form-control form-control--sm">
+                    </div>
+                    <div class="import-row__field">
+                        <label class="import-row__label">Prix achat (€)</label>
+                        <input type="number" name="products[{{ i }}][purchasePrice]"
+                               value="{{ p.purchasePrice is not null ? p.purchasePrice|number_format(2, '.', '') : '' }}"
+                               class="form-control form-control--sm" min="0" step="0.01">
+                    </div>
+                    <div class="import-row__field">
+                        <label class="import-row__label">Prix vente (€)</label>
+                        <input type="number" name="products[{{ i }}][sellingPrice]"
+                               value="{{ p.sellingPrice is not null ? p.sellingPrice|number_format(2, '.', '') : '' }}"
+                               class="form-control form-control--sm" min="0" step="0.01">
+                    </div>
+                    <div class="import-row__field">
+                        <label class="import-row__label">Quantité</label>
+                        <input type="number" name="products[{{ i }}][stockQuantity]"
+                               value="{{ p.stockQuantity }}" class="form-control form-control--sm"
+                               min="0" step="1">
+                    </div>
+                </div>
+
+                {# ── Action toggle (toujours visible) ── #}
+                <div class="import-row__match">
+                    <div class="import-row__action-toggle">
+                        <label class="action-option action-option--update">
+                            <input type="radio" name="action[{{ i }}]" value="update"
+                                   {% if defaultUpdate %}checked{% endif %}
+                                   data-action="change->import-row#selectUpdate">
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15" aria-hidden="true"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+                            Mettre à jour
+                        </label>
+                        <label class="action-option action-option--create">
+                            <input type="radio" name="action[{{ i }}]" value="create"
+                                   {% if not defaultUpdate %}checked{% endif %}
+                                   data-action="change->import-row#selectCreate">
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15" aria-hidden="true"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+                            Créer nouveau
+                        </label>
+                    </div>
+
+                    {# Section mettre à jour #}
+                    <div data-import-row-target="updateSection" {% if not defaultUpdate %}hidden{% endif %}>
+                        <input type="hidden" name="matched_id[{{ i }}]"
+                               value="{{ match.product ? match.product.id : '' }}"
+                               data-import-row-target="matchedId">
+
+                        <label class="import-row__label" style="display:block; margin: 0.75rem 0 0.375rem;">
+                            Produit à mettre à jour
+                        </label>
+
+                        {# Custom product picker #}
+                        <div class="ppicker">
+                            <button type="button"
+                                    class="ppicker__trigger"
+                                    data-import-row-target="pickerTrigger"
+                                    data-action="click->import-row#openPicker">
+                                {% if match.product %}
+                                    {# Pré-rempli si match détecté #}
+                                    <div class="ppicker__selected">
+                                        <div class="ppicker__thumb">
+                                            {% set img = match.product.images.isEmpty ? null : match.product.images.first %}
+                                            {% if img %}
+                                                <img src="{{ path('app_image_serve', {id: img.id}) }}"
+                                                     alt="" class="ppicker__thumb-img">
+                                            {% else %}
+                                                <span class="ppicker__thumb-empty">📦</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="ppicker__info">
+                                            <div class="ppicker__name">{{ match.product.name }}</div>
+                                            <div class="ppicker__meta">
+                                                {% if match.product.reference %}<span>{{ match.product.reference }}</span> · {% endif %}
+                                                <span>{{ match.product.stockQuantity }} en stock</span>
+                                                {% if match.product.price and match.product.price.sellingPriceCents %}
+                                                     · <span class="ppicker__price">{{ (match.product.price.sellingPriceCents / 100)|number_format(2, ',', "\u{202F}") }} €</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <span class="ppicker__change-hint">Changer</span>
+                                    </div>
+                                {% else %}
+                                    <span class="ppicker__placeholder">Sélectionner un produit…</span>
+                                {% endif %}
+                            </button>
+
+                            <div class="ppicker__panel" data-import-row-target="pickerPanel" hidden>
+                                <div class="ppicker__search-wrap">
+                                    <svg class="ppicker__search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <input type="search" class="ppicker__search" placeholder="Rechercher un produit…"
+                                           data-import-row-target="pickerSearch"
+                                           data-action="input->import-row#filterProducts">
+                                </div>
+                                <div class="ppicker__results" data-import-row-target="pickerResults"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Section créer nouveau : catégorie #}
+                    <div data-import-row-target="createSection" {% if defaultUpdate %}hidden{% endif %}>
+                        <label class="import-row__label" style="display:block; margin: 0.75rem 0 0.375rem;">
+                            Catégorie
+                        </label>
+                        <select name="products[{{ i }}][categoryId]" class="form-select form-select--sm" style="width:100%">
+                            <option value="">— Aucune —</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+            </div>{# /body #}
+        </div>{# /import-row #}
+        {% endfor %}
+    </div>
+
+    <div class="form-actions" style="margin-top: 1.5rem;">
+        <a href="{{ path('app_import_pdf') }}" class="btn btn--secondary">Recommencer</a>
+        <button type="submit" class="btn btn--primary">Confirmer l'import</button>
+    </div>
+</form>
+{% endblock %}

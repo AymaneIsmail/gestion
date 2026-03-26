@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Importer des produits depuis un PDF{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav class="breadcrumb">
+            <a href="{{ path('app_product_index') }}">Produits</a>
+            <span>›</span>
+            <span>Import PDF</span>
+        </nav>
+        <h1 class="page-title">Importer depuis un PDF</h1>
+        <p class="page-subtitle">L'IA extraira automatiquement les produits du document.</p>
+    </div>
+</div>
+
+<div data-controller="pdf-upload">
+    <form
+        method="post"
+        action="{{ path('app_import_pdf_process') }}"
+        enctype="multipart/form-data"
+        data-action="submit->pdf-upload#submit"
+    >
+        <input type="hidden" name="_token" value="{{ csrf_token('import-pdf') }}">
+
+        <div class="form-section">
+            <h2 class="form-section__title">Fichier PDF</h2>
+
+            <input
+                type="file"
+                name="pdf"
+                id="pdf"
+                accept=".pdf,application/pdf"
+                required
+                class="img-upload-input"
+                data-pdf-upload-target="input"
+                data-action="change->pdf-upload#preview"
+            >
+
+            <label for="pdf" class="img-dropzone" data-pdf-upload-target="dropzone" data-action="click->pdf-upload#pick">
+                <div class="img-dropzone__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                    </svg>
+                </div>
+                <span class="img-dropzone__label" data-pdf-upload-target="label">
+                    Cliquez pour sélectionner un fichier PDF
+                </span>
+                <span class="img-dropzone__hint">PDF uniquement — 10 Mo max</span>
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ path('app_product_index') }}" class="btn btn--secondary">Annuler</a>
+            <button type="submit" class="btn btn--primary" data-pdf-upload-target="submitBtn">
+                Extraire les produits
+            </button>
+        </div>
+    </form>
+
+    <div class="pdf-loading-overlay" data-pdf-upload-target="overlay">
+        <div class="pdf-loading-overlay__box">
+            <div class="product-spinner is-loading">
+                <span class="product-spinner__dot"></span>
+                <span class="product-spinner__dot"></span>
+                <span class="product-spinner__dot"></span>
+            </div>
+            <p class="pdf-loading-overlay__label">Analyse du PDF en cours…</p>
+            <p class="pdf-loading-overlay__hint">L'IA extrait les produits, cela peut prendre quelques secondes.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

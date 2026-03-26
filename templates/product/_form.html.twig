@@ -18,9 +18,43 @@
             {{ form_widget(form.category, {attr: {class: 'form-select'}}) }}
             {{ form_errors(form.category) }}
         </div>
-        <div class="form-group form-group--full">
-            {{ form_label(form.description) }}
-            {{ form_widget(form.description, {attr: {class: 'form-control'}}) }}
+        <div class="form-group form-group--full"
+             {% if product is defined %}
+             data-controller="generate-description"
+             data-generate-description-url-value="{{ path('app_product_generate_description', {id: product.id}) }}"
+             {% endif %}>
+            <div class="form-label-row">
+                {{ form_label(form.description) }}
+                {% if product is defined %}
+                <button type="button"
+                        class="btn-generate-desc"
+                        data-generate-description-target="button"
+                        data-action="click->generate-description#generate">
+                    <span data-generate-description-target="spinner" hidden>
+                        <svg class="btn-generate-desc__spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.636-6.364-2.122 2.122M8.757 15.243l-2.121 2.121M5.364 5.364l2.122 2.122M15.243 15.243l2.121 2.121"/>
+                        </svg>
+                    </span>
+                    <svg class="btn-generate-desc__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.091Z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"/>
+                    </svg>
+                    Générer avec l'IA
+                </button>
+                {% endif %}
+            </div>
+            <div class="ai-textarea-wrap">
+                {{ form_widget(form.description, {attr: {
+                    class: 'form-control',
+                    'data-generate-description-target': product is defined ? 'textarea' : ''
+                }}) }}
+                {% if product is defined %}
+                <div class="ai-overlay" data-generate-description-target="overlay" hidden>
+                    <span class="ai-overlay__icon" data-generate-description-target="overlayIcon">🔍</span>
+                    <span class="ai-overlay__label" data-generate-description-target="overlayLabel">Génération en cours…</span>
+                </div>
+                {% endif %}
+            </div>
             {{ form_errors(form.description) }}
         </div>
     </div>
