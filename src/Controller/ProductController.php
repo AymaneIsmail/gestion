@@ -19,7 +19,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/produits')]
 class ProductController extends AbstractController
@@ -54,6 +56,70 @@ class ProductController extends AbstractController
             'total'    => $total,
             'hasMore'  => $hasMore,
         ]);
+    }
+
+    #[Route('/export-csv', name: 'app_product_export_csv', methods: ['GET'])]
+    public function exportCsv(
+        ProductRepository $productRepository,
+        OrganizationContext $organizationContext,
+    ): StreamedResponse {
+        $organization = $organizationContext->requireActiveOrganization();
+        $products = $productRepository->findByOrganization($organization);
+
+        $response = new StreamedResponse(function () use ($products): void {
+            $handle = fopen('php://output', 'w');
+            // BOM UTF-8 pour compatibilité Excel
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            $headers = [
+                'Catégorie', 'Sous-catégorie', 'Titre', 'Description',
+                'Quantité', 'Type', 'Prix', 'Profil de livraison',
+                'Offre possible', 'État',
+                'URL d\'image 1', 'URL d\'image 2', 'URL d\'image 3', 'URL d\'image 4',
+                'URL d\'image 5', 'URL d\'image 6', 'URL d\'image 7', 'URL d\'image 8',
+            ];
+            fputcsv($handle, $headers, ',');
+
+            foreach ($products as $product) {
+                $price = $product->getPrice();
+                $sellingPrice = $price?->getSellingPriceCents() !== null
+                    ? number_format($price->getSellingPriceCents() / 100, 2, '.', '')
+                    : '';
+
+                $images = $product->getImages()->toArray();
+                $imageUrls = array_fill(0, 8, '');
+                foreach (array_slice($images, 0, 8) as $i => $image) {
+                    $imageUrls[$i] = $this->generateUrl(
+                        'app_image_serve',
+                        ['id' => $image->getId()],
+                        UrlGeneratorInterface::ABSOLUTE_URL,
+                    );
+                }
+
+                $row = [
+                    $product->getCategory()?->getName() ?? 'Parfums',
+                    '',
+                    $product->getName(),
+                    $product->getDescription() ?? '',
+                    $product->getStockQuantity(),
+                    '',
+                    $sellingPrice,
+                    'De 20 g à <100 g',
+                    '',
+                    '',
+                    ...$imageUrls,
+                ];
+                fputcsv($handle, $row, ',');
+            }
+
+            fclose($handle);
+        });
+
+        $filename = 'produits-' . (new \DateTimeImmutable())->format('Y-m-d') . '.csv';
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
+
+        return $response;
     }
 
     #[Route('/nouveau', name: 'app_product_new', methods: ['GET', 'POST'])]
