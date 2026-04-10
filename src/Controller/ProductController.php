@@ -68,22 +68,22 @@ class ProductController extends AbstractController
 
         $response = new StreamedResponse(function () use ($products): void {
             $handle = fopen('php://output', 'w');
-            // BOM UTF-8 pour compatibilité Excel
-            fwrite($handle, "\xEF\xBB\xBF");
 
-            $headers = [
-                'Catégorie', 'Sous-catégorie', 'Titre', 'Description',
-                'Quantité', 'Type', 'Prix', 'Profil de livraison',
-                'Offre possible', 'État',
-                'URL d\'image 1', 'URL d\'image 2', 'URL d\'image 3', 'URL d\'image 4',
-                'URL d\'image 5', 'URL d\'image 6', 'URL d\'image 7', 'URL d\'image 8',
-            ];
-            fputcsv($handle, $headers, ',');
+            fputcsv($handle, [
+                'Category', 'Sub Category', 'Title', 'Description',
+                'Quantity', 'Type', 'Price', 'Shipping Profile',
+                'Offerable', 'Hazmat', 'Condition', 'Cost Per Item', 'SKU',
+                'Image URL 1', 'Image URL 2', 'Image URL 3', 'Image URL 4',
+                'Image URL 5', 'Image URL 6', 'Image URL 7', 'Image URL 8',
+            ]);
 
             foreach ($products as $product) {
                 $price = $product->getPrice();
                 $sellingPrice = $price?->getSellingPriceCents() !== null
                     ? number_format($price->getSellingPriceCents() / 100, 2, '.', '')
+                    : '';
+                $costPerItem = $price?->getPurchasePriceCents() !== null
+                    ? number_format($price->getPurchasePriceCents() / 100, 2, '.', '')
                     : '';
 
                 $images = $product->getImages()->toArray();
@@ -96,20 +96,22 @@ class ProductController extends AbstractController
                     );
                 }
 
-                $row = [
-                    $product->getCategory()?->getName() ?? 'Parfums',
-                    '',
+                fputcsv($handle, [
+                    $product->getCategory()?->getName() ?? 'Beauty',
+                    'Fragrances',
                     $product->getName(),
                     $product->getDescription() ?? '',
                     $product->getStockQuantity(),
-                    '',
+                    'Auction',
                     $sellingPrice,
-                    'De 20 g à <100 g',
+                    '20 to <100 grams',
                     '',
-                    '',
+                    'Not Hazmat',
+                    'New',
+                    $costPerItem,
+                    $product->getReference() ?? '',
                     ...$imageUrls,
-                ];
-                fputcsv($handle, $row, ',');
+                ]);
             }
 
             fclose($handle);

@@ -12,6 +12,8 @@
         </nav>
         <h1 class="page-title">{{ product.name }}</h1>
     </div>
+    <div class="page-header__actions">
+        <a href="{{ path('app_product_new') }}" class="btn btn--primary">+ Nouveau produit</a>
     <div class="kebab-menu" data-controller="dropdown">
         <button
             type="button"
@@ -61,6 +63,7 @@
                 </button>
             </form>
         </div>
+    </div>
     </div>
 </div>
 

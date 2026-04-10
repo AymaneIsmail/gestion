@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+      target: dev
     volumes:
       - .:/app
       - /app/var
@@ -18,8 +19,19 @@ services:
     networks:
       - gestion
 
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    networks:
+      - gestion
+
   database:
     image: postgres:16-alpine
+    env_file:
+      - .env.local
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
