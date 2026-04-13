@@ -79,12 +79,19 @@ class ProductController extends AbstractController
 
             foreach ($products as $product) {
                 $price = $product->getPrice();
+                // Whatnot requires positive integer prices (whole dollars)
                 $sellingPrice = $price?->getSellingPriceCents() !== null
-                    ? number_format($price->getSellingPriceCents() / 100, 2, '.', '')
+                    ? max(1, (int) round($price->getSellingPriceCents() / 100))
                     : '';
                 $costPerItem = $price?->getPurchasePriceCents() !== null
-                    ? number_format($price->getPurchasePriceCents() / 100, 2, '.', '')
+                    ? max(1, (int) round($price->getPurchasePriceCents() / 100))
                     : '';
+
+                // Whatnot title max 150 characters
+                $title = $product->getName();
+                if (mb_strlen($title) > 150) {
+                    $title = mb_substr($title, 0, 147) . '...';
+                }
 
                 $images = $product->getImages()->toArray();
                 $imageUrls = array_fill(0, 8, '');
@@ -99,7 +106,7 @@ class ProductController extends AbstractController
                 fputcsv($handle, [
                     $product->getCategory()?->getName() ?? 'Beauty',
                     'Fragrances',
-                    $product->getName(),
+                    $title,
                     $product->getDescription() ?? '',
                     $product->getStockQuantity(),
                     'Auction',
