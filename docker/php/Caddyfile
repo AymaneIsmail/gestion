@@ -24,9 +24,6 @@ http://{$SERVER_NAME:localhost} {
 
     encode zstd br gzip
 
-    # Bloquer l'accès statique direct aux uploads — servis via ImageController
-    respond /uploads/* 403
-
     # Upload size limit
     request_body {
         max_size 20MB
