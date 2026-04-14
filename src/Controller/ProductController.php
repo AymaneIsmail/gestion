@@ -21,7 +21,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/produits')]
 class ProductController extends AbstractController
@@ -60,13 +59,15 @@ class ProductController extends AbstractController
 
     #[Route('/export-csv', name: 'app_product_export_csv', methods: ['GET'])]
     public function exportCsv(
+        Request $request,
         ProductRepository $productRepository,
         OrganizationContext $organizationContext,
     ): StreamedResponse {
         $organization = $organizationContext->requireActiveOrganization();
         $products = $productRepository->findByOrganization($organization);
+        $baseUrl = 'https://' . $request->getHttpHost();
 
-        $response = new StreamedResponse(function () use ($products): void {
+        $response = new StreamedResponse(function () use ($products, $baseUrl): void {
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, [
@@ -96,11 +97,7 @@ class ProductController extends AbstractController
                 $images = $product->getImages()->toArray();
                 $imageUrls = array_fill(0, 8, '');
                 foreach (array_slice($images, 0, 8) as $i => $image) {
-                    $imageUrls[$i] = $this->generateUrl(
-                        'app_image_serve',
-                        ['id' => $image->getId()],
-                        UrlGeneratorInterface::ABSOLUTE_URL,
-                    );
+                    $imageUrls[$i] = $baseUrl . $image->getPublicPath();
                 }
 
                 fputcsv($handle, [
